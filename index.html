@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA Balsam Fir Tree Farms - Find Your Perfect Tree</title>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f472c 0%, #1a5c3a 50%, #0d3d24 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .reference-point {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 15px 0 0 0;
+            display: inline-block;
+            font-size: 0.95em;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            height: 600px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .farms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .farms-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .farms-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .farms-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .farm-card {
+            background: white;
+            border-left: 5px solid #2d8659;
+            padding: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .farm-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            background: #f8fdf8;
+        }
+
+        .farm-card.active {
+            background: #e8f5f0;
+            border-left-color: #1a5c3a;
+            box-shadow: 0 6px 20px rgba(45, 134, 89, 0.3);
+        }
+
+        .farm-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #0f472c;
+            margin-bottom: 8px;
+        }
+
+        .farm-detail {
+            font-size: 0.9em;
+            color: #555;
+            margin: 5px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .farm-detail-icon {
+            display: inline-block;
+            width: 18px;
+            margin-right: 8px;
+            color: #2d8659;
+            font-weight: bold;
+        }
+
+        .distance {
+            background: #e8f5f0;
+            color: #1a5c3a;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .price-tag {
+            background: #fff3cd;
+            color: #856404;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #0f472c 0%, #1a5c3a 100%);
+            color: white;
+        }
+
+        th {
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #4caf50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .info-box h3 {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .map-container {
+                height: 400px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+            }
+
+            th, td {
+                padding: 12px;
+                font-size: 0.85em;
+            }
+
+            .farm-card {
+                padding: 14px;
+            }
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .leaflet-popup-tip {
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌲 GTA Balsam Fir Tree Farms</h1>
+            <p class="subtitle">Find & Cut Your Perfect Christmas Tree Near Toronto</p>
+            <div class="reference-point">📍 Reference: 151 Poyntz Ave, Toronto, ON</div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+
+            <div class="farms-list" id="farmsList"></div>
+        </div>
+
+        <div class="table-container">
+            <table id="farmsTable">
+                <thead>
+                    <tr>
+                        <th>Farm Name</th>
+                        <th>Address</th>
+                        <th>Distance</th>
+                        <th>Drive Time</th>
+                        <th>Sunday Hours</th>
+                        <th>Balsam Fir Price</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="info-box">
+            <h3>✨ Tips for Your Visit</h3>
+            <ul>
+                <li><strong>Best Time:</strong> Arrive early (9-11am) for wider tree selection</li>
+                <li><strong>Bring:</strong> Warm clothing, gloves, hand warmers, and a camera</li>
+                <li><strong>Payment:</strong> Confirm accepted payment methods (most accept cash/card)</li>
+                <li><strong>Parking:</strong> All farms offer free on-site parking</li>
+                <li><strong>Amenities:</strong> Some farms have hot chocolate, bonfires, and wagon rides</li>
+                <li><strong>Balsam Fir Info:</strong> Known for strongest fragrance, excellent needle retention (3-4 weeks), and classic holiday scent</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Farm data
+        const farms = [
+            {
+                name: "Prestonvale Tree Farms",
+                address: "1421 Prestonvale Rd, Courtice, ON L1E 2P2",
+                lat: 43.8747,
+                lng: -79.0433,
+                distance: "36.8 km",
+                driveTime: "~44 min",
+                hours: "8:00am - 5:00pm",
+                price: "$67 (cut) / $65 (pre-cut)",
+                trees: "Balsam Fir, Fraser Fir, Spruce, Pine",
+                phone: "905-434-3910",
+                amenities: "Dogs welcome, Free bailing & shaking"
+            },
+            {
+                name: "Hope's Christmas Tree Farm",
+                address: "1962 Durham Regional Rd 3, Enniskillen, ON L0B 1J0",
+                lat: 43.9633,
+                lng: -79.1617,
+                distance: "38.3 km",
+                driveTime: "~46 min",
+                hours: "9:00am - 5:00pm",
+                price: "Call for pricing",
+                trees: "Balsam Fir, Fraser Fir, and more",
+                phone: "905-261-5040",
+                amenities: "Dogs allowed, Staff assistance"
+            },
+            {
+                name: "MacPherson Christmas Tree Farm",
+                address: "17422 ON-48, Whitchurch-Stouffville, ON L4A 1Z1",
+                lat: 44.0417,
+                lng: -79.2250,
+                distance: "44.3 km",
+                driveTime: "~53 min",
+                hours: "9:00am - 4:00pm",
+                price: "$85-$100 (pre) / $90 (cut)",
+                trees: "Balsam Fir, Fraser Fir, White Spruce, Canaan Fir",
+                phone: "905-717-0499",
+                amenities: "Wagon rides, Hot chocolate, Scavenger hunts"
+            },
+            {
+                name: "Elliott Tree Farm",
+                address: "9467 E Garafraxa Erin Townline, Hillsburgh, ON N0B 1Z0",
+                lat: 43.7736,
+                lng: -79.9389,
+                distance: "45.4 km",
+                driveTime: "~54 min",
+                hours: "9:00am - 5:00pm",
+                price: "$79-$699 (pre-cut)",
+                trees: "Balsam Fir, Fraser Fir, Blue Spruce, White Spruce, Canaan Fir",
+                phone: "519-216-0699",
+                amenities: "Canteen, Gift shop, Bonfire, Museum, No parking fee"
+            },
+            {
+                name: "Spademan Tree Farm",
+                address: "545 Durham Regional Rd 21, Port Perry, ON L9L 1Z5",
+                lat: 44.0194,
+                lng: -79.0889,
+                distance: "46.7 km",
+                driveTime: "~56 min",
+                hours: "9:00am - 4:30pm",
+                price: "$75 (cut your own)",
+                trees: "Balsam Fir, Fraser Fir, Spruce, Pine",
+                phone: "905-985-7291",
+                amenities: "Free bailing & shaking, Cash only"
+            },
+            {
+                name: "Laura's Christmas Trees",
+                address: "998024 Mulmur Tosorontio Townline, Mulmur, ON L9V 0W2",
+                lat: 44.5169,
+                lng: -79.7594,
+                distance: "99.3 km",
+                driveTime: "~119 min",
+                hours: "10:00am - 4:00pm",
+                price: "Call for pricing",
+                trees: "Various varieties",
+                phone: "705-466-5790",
+                amenities: "Family-friendly, Dogs welcome, Cash only"
+            }
+        ];
+
+        // Reference point (151 Poyntz Ave, Toronto)
+        const referencePoint = [43.6629, -79.3957];
+
+        // Initialize map
+        const map = L.map('map').setView(referencePoint, 9);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add reference point marker
+        const referenceMarker = L.circleMarker(referencePoint, {
+            radius: 8,
+            fillColor: '#ff6b6b',
+            color: '#c92a2a',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map);
+        
+        referenceMarker.bindPopup('<strong>Your Location</strong><br>151 Poyntz Ave, Toronto', { className: 'custom-popup' });
+
+        // Add farm markers
+        const markers = {};
+        farms.forEach((farm, index) => {
+            const marker = L.circleMarker([farm.lat, farm.lng], {
+                radius: 12,
+                fillColor: '#2d8659',
+                color: '#0f472c',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            const popupContent = `
+                <div style="max-width: 250px; font-size: 13px; line-height: 1.5;">
+                    <strong style="color: #0f472c; font-size: 14px;">${farm.name}</strong><br>
+                    <small style="color: #555;"><strong>📍</strong> ${farm.address}</small><br>
+                    <small style="color: #555;"><strong>📞</strong> ${farm.phone}</small><br>
+                    <small style="color: #555;"><strong>⏰</strong> Sun: ${farm.hours}</small><br>
+                    <small style="color: #2d8659; font-weight: bold;">💰 ${farm.price}</small><br>
+                    <small style="color: #555;"><strong>🎄</strong> ${farm.trees}</small>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            markers[index] = { marker, farm };
+
+            // Click farm name in list to highlight
+            marker.on('click', () => {
+                highlightFarm(index);
+            });
+        });
+
+        // Populate farms list
+        const farmsList = document.getElementById('farmsList');
+        farms.forEach((farm, index) => {
+            const card = document.createElement('div');
+            card.className = 'farm-card';
+            card.innerHTML = `
+                <div class="farm-name">${farm.name}</div>
+                <div class="farm-detail">
+                    <span class="farm-detail-icon">📍</span>
+                    <span>${farm.address.split(',')[0]}</span>
+                </div>
+                <div class="farm-detail">
+                    <span class="farm-detail-icon">📏</span>
+                    <span>${farm.distance} (~${farm.driveTime})</span>
+                </div>
+                <div class="farm-detail">
+                    <span class="farm-detail-icon">⏰</span>
+                    <span>Sun: ${farm.hours}</span>
+                </div>
+                <div class="farm-detail">
+                    <span class="farm-detail-icon">🎄</span>
+                    <span>${farm.trees}</span>
+                </div>
+                <span class="price-tag">💰 ${farm.price}</span>
+                <span class="distance">${farm.amenities}</span>
+            `;
+
+            card.addEventListener('click', () => {
+                highlightFarm(index);
+            });
+
+            farmsList.appendChild(card);
+        });
+
+        // Populate table
+        const tableBody = document.getElementById('tableBody');
+        farms.forEach(farm => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${farm.name}</strong></td>
+                <td>${farm.address}</td>
+                <td>${farm.distance}</td>
+                <td>${farm.driveTime}</td>
+                <td>${farm.hours}</td>
+                <td><strong>${farm.price}</strong></td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Highlight function
+        function highlightFarm(index) {
+            // Remove active class from all cards
+            document.querySelectorAll('.farm-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Add active class to selected card
+            const cards = document.querySelectorAll('.farm-card');
+            cards[index].classList.add('active');
+
+            // Center map on marker
+            const farm = farms[index];
+            map.setView([farm.lat, farm.lng], 11);
+            markers[index].marker.openPopup();
+
+            // Scroll card into view
+            cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
